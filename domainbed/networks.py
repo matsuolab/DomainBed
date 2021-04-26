@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models
+import pytorch_pretrained_vit
 
 from domainbed.lib import misc
 from domainbed.lib import wide_resnet
@@ -122,6 +123,21 @@ class ResNet(torch.nn.Module):
             if isinstance(m, nn.BatchNorm2d):
                 m.eval()
 
+class ViT(torch.nn.Module):
+    def __init__(self, input_shape, hparams):
+        super().__init__()
+        self.network = pytorch_pretrained_vit.ViT(
+            hparams['backbone'], pretrained=True
+        )
+        self.n_outputs = self.network.fc.in_features
+        del self.network.fc
+        self.network.fc = Identity()
+        self.hparams = hparams
+
+    def forward(self, x):
+        """Encode x into a feature vector of size n_outputs."""
+        return self.network(x)
+
 class MNIST_CNN(nn.Module):
     """
     Hand-tuned architecture for MNIST.
@@ -195,8 +211,10 @@ def Featurizer(input_shape, hparams):
         return MNIST_CNN(input_shape)
     elif input_shape[1:3] == (32, 32):
         return wide_resnet.Wide_ResNet(input_shape, 16, 2, 0.)
-    elif input_shape[1:3] == (224, 224):
+    elif input_shape[1:3] == (224, 224) and hparams['backbone'] in ['resnet50', 'resnet18']:
         return ResNet(input_shape, hparams)
+    elif input_shape[1:3] == (224, 224) and hparams['backbone'] in ['B_16']:
+        return ViT(input_shape, hparams)
     else:
         raise NotImplementedError
 

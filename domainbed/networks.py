@@ -257,7 +257,7 @@ class ResNetV2(nn.Module):
   def __init__(self, block_units, width_factor, head_size=21843, zero_head=False):
     super().__init__()
     wf = width_factor  # shortcut 'cause we'll use it a lot.
-
+    self.wf = wf
     # The following will be unreadable if we split lines.
     # pylint: disable=line-too-long
     self.root = nn.Sequential(OrderedDict([
@@ -345,8 +345,8 @@ class BiT(torch.nn.Module):
         weights = get_weights(model_name)
         
         self.network = self.KNOWN_MODELS[model_name]()
-        
-        self.n_outputs = 6144
+        self.network.load_from(weights)
+        self.n_outputs = 2048 * self.network.wf
         self.network.head.conv = nn.Flatten()
         self.hparams = hparams
     

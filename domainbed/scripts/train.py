@@ -8,6 +8,7 @@ import random
 import sys
 import time
 import uuid
+from itertools import chain
 
 import numpy as np
 import PIL
@@ -20,6 +21,15 @@ from domainbed import hparams_registry
 from domainbed import algorithms
 from domainbed.lib import misc
 from domainbed.lib.fast_data_loader import InfiniteDataLoader, FastDataLoader
+
+
+class DataParallelPassthrough(torch.nn.DataParallel):
+    def __getattr__(self, name):
+        try:
+            return super().__getattr__(name)
+        except AttributeError:
+            return getattr(self.module, name)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Domain generalization')
@@ -176,6 +186,7 @@ if __name__ == "__main__":
         algorithm.load_state_dict(algorithm_dict)
 
     algorithm.to(device)
+    algorithm.network = DataParallelPassthrough(algorithm.network)
 
     train_minibatches_iterator = zip(*train_loaders)
     uda_minibatches_iterator = zip(*uda_loaders)

@@ -33,6 +33,12 @@ DATASETS = [
     "WILDSFMoW"
 ]
 
+
+class MyDataParallel(torch.nn.DataParallel):
+    def __getattr__(self, name):
+        return getattr(self.module, name)
+
+
 def get_dataset_class(dataset_name):
     """Return the dataset class with the given name."""
     if dataset_name not in globals():

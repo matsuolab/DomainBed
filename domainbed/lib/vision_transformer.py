@@ -25,3 +25,15 @@ class ViT(torch.nn.Module):
     def forward(self, x):
         """Encode x into a feature vector of size n_outputs."""
         return self.network(x)
+
+
+class DINO(torch.nn.Module):
+    def __init__(self, input_shape, hparams):
+        super().__init__()
+        self.network = torch.hub.load('facebookresearch/dino:main', hparams['backbone'])
+        self.n_outputs = self.network.norm.normalized_shape[0]
+        self.hparams = hparams
+
+    def forward(self, x):
+        """Encode x into a feature vector of size n_outputs."""
+        return self.network(x)

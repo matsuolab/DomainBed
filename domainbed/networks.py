@@ -204,6 +204,8 @@ def Featurizer(input_shape, hparams):
         return vision_transformer.DINO(input_shape, hparams)
     elif input_shape[1:3] == (224, 224) and 'vit_deit' in hparams['backbone']:
         return vision_transformer.DeiT(input_shape, hparams)
+    elif input_shape[1:3] == (224, 224) and 'HViT' in hparams['backbone']:
+        return vision_transformer.HybridViT(input_shape, hparams)
     elif input_shape[1:3] == (224, 224) and 'mixer' in hparams['backbone']:
         return mlp_mixer.MLPMixer(input_shape, hparams)
     elif input_shape[1:3] == (224, 224) and 'BiT' in hparams['backbone']:

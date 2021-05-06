@@ -186,7 +186,11 @@ if __name__ == "__main__":
         algorithm.load_state_dict(algorithm_dict)
 
     algorithm.to(device)
-    algorithm.network = DataParallelPassthrough(algorithm.network)
+    if hasattr(algorithm, 'network'):
+        algorithm.network = DataParallelPassthrough(algorithm.network)
+    else:
+        for m in algorithm.children():
+            m = DataParallelPassthrough(m)
 
     train_minibatches_iterator = zip(*train_loaders)
     uda_minibatches_iterator = zip(*uda_loaders)

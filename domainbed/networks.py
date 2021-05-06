@@ -8,7 +8,7 @@ from domainbed.lib import misc
 from domainbed.lib import wide_resnet
 from domainbed.lib import big_transfer
 from domainbed.lib import vision_transformer
-
+from domainbed.lib import mlp_mixer
 
 def remove_batch_norm_from_resnet(model):
     fuse = torch.nn.utils.fusion.fuse_conv_bn_eval
@@ -201,7 +201,9 @@ def Featurizer(input_shape, hparams):
     elif input_shape[1:3] == (224, 224) and hparams['backbone'] in ['B_16', 'B_32', 'L_16', 'L_32']:
         return vision_transformer.ViT(input_shape, hparams)
     elif input_shape[1:3] == (224, 224) and 'dino' in hparams['backbone']:
-        return big_transfer.DINO(input_shape, hparams)
+        return vision_transformer.DINO(input_shape, hparams)
+    elif input_shape[1:3] == (224, 224) and 'mixer' in hparams['backbone']:
+        return mlp_mixer.MLPMixer(input_shape, hparams)
     elif input_shape[1:3] == (224, 224) and 'BiT' in hparams['backbone']:
         return big_transfer.BiT(input_shape, hparams)
     else:

@@ -198,6 +198,8 @@ def Featurizer(input_shape, hparams):
         return wide_resnet.Wide_ResNet(input_shape, 16, 2, 0.)
     elif input_shape[1:3] == (224, 224) and hparams['backbone'] in ['resnet50', 'resnet18']:
         return ResNet(input_shape, hparams)
+    elif input_shape[1:3] == (224, 224) and 'ViT-' in hparams['backbone']:
+        return vision_transformer.ViT2(input_shape, hparams)
     elif input_shape[1:3] == (224, 224) and hparams['backbone'] in ['B_16', 'B_32', 'L_16', 'L_32']:
         return vision_transformer.ViT(input_shape, hparams)
     elif input_shape[1:3] == (224, 224) and 'dino' in hparams['backbone']:

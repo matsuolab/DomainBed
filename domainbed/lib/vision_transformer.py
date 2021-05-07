@@ -29,8 +29,13 @@ class ViT(torch.nn.Module):
 
 class ViT2(torch.nn.Module):
     KNOWN_MODELS = {
-        'ViT-B16': timm.models.vision_transformer.vit_base_patch16_224_in21k
+        'ViT-B16': timm.models.vision_transformer.vit_base_patch16_224_in21k, 
+        'ViT-B32': timm.models.vision_transformer.vit_base_patch32_224_in21k,
+        'ViT-L16': timm.models.vision_transformer.vit_large_patch16_224_in21k,
+        'ViT-L32': timm.models.vision_transformer.vit_large_patch32_224_in21k,
+        'ViT-H14': timm.models.vision_transformer.vit_huge_patch14_224_in21k
     }
+
     def __init__(self, input_shape, hparams):
         super().__init__()
         func = self.KNOWN_MODELS[hparams['backbone']]

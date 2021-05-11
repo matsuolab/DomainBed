@@ -21,7 +21,8 @@ from domainbed import hparams_registry
 from domainbed import algorithms
 from domainbed.lib import misc
 from domainbed.lib.fast_data_loader import InfiniteDataLoader, FastDataLoader
-
+from domainbed import model_selection
+from domainbed.lib.query import Q
 
 class DataParallelPassthrough(torch.nn.DataParallel):
     def __getattr__(self, name):
@@ -265,9 +266,18 @@ if __name__ == "__main__":
             start_step = step + 1
             checkpoint_vals = collections.defaultdict(lambda: [])
 
+            records = []
+            with open(epochs_path, 'r') as f:
+                for line in f:
+                    records.append(json.loads(line[:-1]))
+            records = Q(records)
+            scores = records.map(model_selection.IIDAccuracySelectionMethod._step_acc)
+            if scores[-1] == scores.argmax('val_acc'):
+                save_checkpoint('IID_best.pkl')
+                algorithm.to(device)
+            
             if args.save_model_every_checkpoint:
-                save_checkpoint(f'model_step{step}.pkl')
-
+                save_checkpoint(f'model_step{step}.pkl')          
     save_checkpoint('model.pkl')
 
     with open(os.path.join(args.output_dir, 'done'), 'w') as f:

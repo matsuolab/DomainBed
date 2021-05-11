@@ -50,6 +50,23 @@ class ViT2(torch.nn.Module):
         """Encode x into a feature vector of size n_outputs."""
         return self.network(x)
 
+    def forward_adaptive_token(self, x, cls_token):
+        x = self.network.patch_embed(x)
+        if cls_token.shape[0] == 1:
+            cls_token = cls_token.expand(x.shape[0], -1, -1)
+        
+        if self.network.dist_token is None:
+            x = torch.cat((cls_token, x), dim=1)
+        else:
+            x = torch.cat((cls_token, self.network.dist_token.expand(x.shape[0], -1, -1), x), dim=1)
+        x = self.network.pos_drop(x + self.network.pos_embed)
+        x = self.network.blocks(x)
+        x = self.network.norm(x)
+        if self.network.dist_token is None:
+            return self.network.pre_logits(x[:, 0])
+        else:
+            return x[:, 0], x[:, 1]        
+
 
 class DINO(torch.nn.Module):
     def __init__(self, input_shape, hparams):
@@ -80,7 +97,7 @@ class DeiT(torch.nn.Module):
     def forward(self, x):
         """Encode x into a feature vector of size n_outputs."""
         y = self.network(x)
-        return (y[0] + y[1]) / 2  # This is the default option during inference of DeiT
+        return (y[0] + y[1]) / 2  # This is the default option during inference of DeiT k
 
 
 class HybridViT(torch.nn.Module):
